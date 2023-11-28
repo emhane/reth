@@ -8,6 +8,7 @@ use crate::{
     EthMessage, EthVersion,
 };
 use alloy_rlp::{Decodable, Encodable, RlpDecodable, RlpEncodable};
+use derive_more::{Deref, DerefMut};
 use reth_codecs::add_arbitrary_tests;
 use reth_primitives::bytes::{BufMut, Bytes};
 #[cfg(feature = "serde")]
@@ -97,6 +98,12 @@ impl Capability {
     #[inline]
     pub fn is_eth_v68(&self) -> bool {
         self.name == "eth" && self.version == 68
+    }
+
+    /// Whether this is any eth version.
+    #[inline]
+    pub fn is_eth(&self) -> bool {
+        self.is_eth_v66() || self.is_eth_v67() || self.is_eth_v68()
     }
 }
 
@@ -329,7 +336,7 @@ impl SharedCapability {
 /// Non-empty,ordered list of recognized shared capabilities.
 ///
 /// Shared capabilities are ordered alphabetically by case sensitive name.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deref, DerefMut)]
 pub struct SharedCapabilities(Vec<SharedCapability>);
 
 impl SharedCapabilities {
