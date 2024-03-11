@@ -98,6 +98,8 @@ mod tests {
     use std::{collections::BTreeMap, ops::AddAssign};
     use reth_tracing;
 
+    use tracing::trace;
+
     #[test]
     fn prune() {
         reth_tracing::init_test_tracing();
@@ -227,6 +229,11 @@ mod tests {
                 })
                 .collect::<Vec<_>>();
 
+            trace!(target: "pruner::test",
+                actual_shards_len=actual_shards.len(),
+                expected_shards=expected_shards.len(),
+                "Pruning history indices result"
+            );
             assert_eq!(actual_shards, expected_shards);
 
             assert_eq!(
