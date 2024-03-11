@@ -28,7 +28,7 @@ where
     let mut deleted = 0;
     let mut cursor = provider.tx_ref().cursor_write::<T>()?;
 
-    tracing::debug!(target: "pruner", "pruning history");
+    tracing::debug!(target: "pruner::history", "pruning history");
     // Prune history table:
     // 1. If the shard has `highest_block_number` less than or equal to the target block number
     // for pruning, delete the shard completely.
@@ -40,8 +40,8 @@ where
         // If shard consists only of block numbers less than the target one, delete shard
         // completely.
         if key.as_ref().highest_block_number <= to_block {
-            tracing::info!(target: "pruner", "pruning history");
             cursor.delete_current()?;
+            tracing::info!(target: "pruner::history", "deleting an entry");
             deleted += 1;
             if key.as_ref().highest_block_number == to_block {
                 // Shard contains only block numbers up to the target one, so we can skip to
@@ -72,6 +72,7 @@ where
                             // has previous shards, replace it with the previous shard.
                             Some((prev_key, prev_value)) if key_matches(&prev_key, &key) => {
                                 cursor.delete_current()?;
+                                tracing::info!(target: "pruner::history", "deleting an entry");
                                 deleted += 1;
                                 // Upsert will replace the last shard for this sharded key with
                                 // the previous value.
@@ -87,6 +88,7 @@ where
                                 }
                                 // Delete shard.
                                 cursor.delete_current()?;
+                                tracing::info!(target: "pruner::history", "deleting an entry");
                                 deleted += 1;
                             }
                         }
@@ -95,13 +97,15 @@ where
                     // just delete it.
                     else {
                         cursor.delete_current()?;
+                        tracing::info!(target: "pruner::history", "deleting an entry");
                         deleted += 1;
                     }
                 } else {
-                    tracing::info!(target: "pruner", "pruning history, shard hasn't changed");
                     cursor.upsert(key.clone(), BlockNumberList::new_pre_sorted(new_blocks))?;
                 }
             }
+
+            tracing::info!(target: "pruner::history", "pruning history, shard hasn't changed");
 
             // Jump to the last shard for this key, if current key isn't already the last shard.
             if key.as_ref().highest_block_number != u64::MAX {
