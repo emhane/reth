@@ -230,8 +230,8 @@ mod tests {
                 .collect::<Vec<_>>();
 
             trace!(target: "pruner::test",
-                actual_shards_len=actual_shards.len(),
-                expected_shards=expected_shards.len(),
+                original_shards_len=original_shards.len(),
+                actual_shards=actual_shards.len(),
                 "Pruning history indices result"
             );
             assert_eq!(actual_shards, expected_shards);
